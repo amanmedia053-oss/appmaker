@@ -24,7 +24,20 @@ jobs:
       - name: Generate Android platform files
         run: flutter create . --platforms=android --org com.appmaker --project-name appmaker
 
-      - name: Install dependencies
+      - name: Build standalone offline reader template
+        working-directory: engine/flutter_template
+        run: |
+          flutter create . --platforms=android --org com.appmaker.generated --project-name generated_reader
+          flutter pub get
+          flutter build apk --release
+
+      - name: Package offline reader template inside AppMaker
+        run: |
+          mkdir -p assets
+          cp engine/flutter_template/build/app/outputs/flutter-apk/app-release.apk assets/offline_template.apk
+          test -s assets/offline_template.apk
+
+      - name: Install AppMaker dependencies
         run: flutter pub get
 
       - name: Analyze Flutter code
