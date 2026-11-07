@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -148,6 +152,34 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _persist() async {
     await LocalStore.save(projects);
     if (mounted) setState(() {});
+  }
+
+  Future<void> _importProject() async {
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+      if (picked == null || picked.files.isEmpty) return;
+      final bytes = picked.files.single.bytes;
+      if (bytes == null) throw const FormatException('فایل لوستل کېدای نه شي.');
+      final decoded = jsonDecode(utf8.decode(bytes));
+      final imported = AppProject.fromJson(Map<String, dynamic>.from(decoded as Map));
+      if (imported.name.trim().isEmpty) throw const FormatException('د پروژې نوم تش دی.');
+      setState(() => projects.insert(0, imported));
+      await _persist();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('پروژه په بریالیتوب وارد شوه.')),
+        );
+        _openProject(imported);
+      }
+    } on FormatException catch (e) {
+      if (mounted) _showInfo('ناسم فایل', e.message);
+    } catch (e) {
+      if (mounted) _showInfo('واردول ناکام شول', 'دا د AppMaker معتبر JSON فایل نه دی.\n$e');
+    }
   }
 
   Future<void> _newProject() async {
@@ -344,7 +376,13 @@ class _DashboardPageState extends State<DashboardPage> {
           const Text('زما اپونه', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: ink)),
           const SizedBox(height: 6),
           const Text('ټولې جوړې شوې پروژې په همدې موبایل کې ساتل کېږي.', style: TextStyle(color: Colors.black54)),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+            onPressed: _importProject,
+            icon: const Icon(Icons.file_open_outlined),
+            label: const Text('له JSON فایل څخه پروژه واردول'),
+          ),
+          const SizedBox(height: 12),
           if (projects.isEmpty)
             _emptyCard('ستاسې د اپونو ځای', 'لومړی اپ جوړ کړه، بیا به دلته ښکاره شي.')
           else
@@ -478,6 +516,32 @@ class ProjectPage extends StatefulWidget {
 }
 
 class _ProjectPageState extends State<ProjectPage> {
+  Future<void> _exportProject() async {
+    try {
+      final directory = await Directory.systemTemp.createTemp('appmaker_export_');
+      final safeName = widget.project.name
+          .replaceAll(RegExp(r'[^a-zA-Z0-9ء-ي _-]'), '')
+          .trim()
+          .replaceAll(RegExp(r'\\s+'), '_');
+      final file = File('${directory.path}/${safeName.isEmpty ? 'project' : safeName}.json');
+      await file.writeAsString(
+        const JsonEncoder.withIndent('  ').convert(widget.project.toJson()),
+        encoding: utf8,
+        flush: true,
+      );
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/json')],
+        text: 'AppMaker project: ${widget.project.name}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('صادرول ناکام شو: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _addBook() async {
     final title = TextEditingController();
     final body = TextEditingController();
@@ -572,16 +636,22 @@ class _ProjectPageState extends State<ProjectPage> {
                 )),
           const SizedBox(height: 20),
           OutlinedButton.icon(
+            onPressed: _exportProject,
+            icon: const Icon(Icons.ios_share_rounded),
+            label: const Text('پروژه د JSON فایل په توګه صادرول'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
             onPressed: () => showDialog<void>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('APK جوړول'),
-                content: const Text('د APK محلي Engine د ریپازټورۍ په tools/build_project.py کې شته. لومړی د پروژې JSON فایل صادر کړه او په Flutter/Android SDK لرونکي کمپیوټر کې engine چلوه. د موبایل اپ څخه اتومات صادرول لا نه دي نښلول شوي.'),
+                title: const Text('د APK جوړول'),
+                content: const Text('دا نسخه پروژه په بشپړ ډول افلاین جوړوي، ساتي، صادرولی او بېرته واردولی شي. خو د همدې موبایل دننه د APK تولید او لاسلیک انجن لا نه دی فعال؛ د APK جوړولو لپاره اوس مهال د کمپیوټر Flutter او Android SDK انجن ته اړتیا ده.'),
                 actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('سمه ده'))],
               ),
             ),
             icon: const Icon(Icons.android),
-            label: const Text('د APK جوړولو لارښود'),
+            label: const Text('د APK حالت'),
           ),
         ],
       ),
