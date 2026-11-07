@@ -28,7 +28,10 @@ jobs:
           cache: true
 
       - name: Generate Android platform files
-        run: flutter create . --platforms=android --org com.appmaker --project-name appmaker
+        run: |
+          flutter create . --platforms=android --org com.appmaker --project-name appmaker
+          # flutter create regenerates its sample MyApp test, which does not exist in AppMaker.
+          rm -f test/widget_test.dart
 
       - name: Build standalone offline reader template
         working-directory: engine/flutter_template
