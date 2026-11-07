@@ -522,7 +522,7 @@ class _ProjectPageState extends State<ProjectPage> {
       final safeName = widget.project.name
           .replaceAll(RegExp(r'[^a-zA-Z0-9ء-ي _-]'), '')
           .trim()
-          .replaceAll(RegExp(r'\\s+'), '_');
+          .replaceAll(RegExp(r'\s+'), '_');
       final file = File('${directory.path}/${safeName.isEmpty ? 'project' : safeName}.json');
       await file.writeAsString(
         const JsonEncoder.withIndent('  ').convert(widget.project.toJson()),
