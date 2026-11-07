@@ -32,3 +32,10 @@ flutter run
 ## Tech
 - Flutter / Dart
 - SharedPreferences for local persistence
+
+
+## Offline APK build engine
+
+A first local build engine is available in `tools/build_project.py` with a standalone reading-app template in `engine/flutter_template`. It packages one project JSON file into its own Android APK using a locally installed Flutter and Android SDK toolchain. See [engine/README.md](engine/README.md) for the input format and commands.
+
+**Current limitation:** the mobile AppMaker app does not yet export its locally stored projects to JSON automatically, and a normal Flutter Android app cannot compile another APK directly on-device without a very large bundled native build toolchain. The current engine therefore runs on a computer with the toolchain installed; it can build offline after all SDK and dependency artifacts have been cached.
