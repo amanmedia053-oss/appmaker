@@ -5,7 +5,9 @@ A beautiful, offline-first Flutter starter for creating content-based app projec
 ## Current milestone
 - Pashto right-to-left interface.
 - Create local app projects: books, poetry, educational, magazine, and personal collections.
-- Add and read writing entries inside each project.
+- Add, edit, read, and delete writing entries inside each project.
+- Delete unwanted projects with a confirmation prompt.
+- Import and export project JSON files for backup or transfer.
 - Project data is stored on-device with SharedPreferences.
 - No account, username, sign-in, Firebase, or network service is needed for normal use.
 
@@ -38,4 +40,8 @@ flutter run
 
 A first local build engine is available in `tools/build_project.py` with a standalone reading-app template in `engine/flutter_template`. It packages one project JSON file into its own Android APK using a locally installed Flutter and Android SDK toolchain. See [engine/README.md](engine/README.md) for the input format and commands.
 
-**Current limitation:** the mobile AppMaker app does not yet export its locally stored projects to JSON automatically, and a normal Flutter Android app cannot compile another APK directly on-device without a very large bundled native build toolchain. The current Python engine therefore runs on a computer with the toolchain installed; it can build offline after all SDK and dependency artifacts have been cached. The CI release workflow also builds the standalone reader template and embeds it in AppMaker as an offline asset.
+**Current limitation:** the Python engine runs on a computer with Flutter and Android SDK installed; it can build offline after all SDK and dependency artifacts have been cached. The mobile app can now export/import local project JSON, but it still cannot generate, sign, and install a separate APK for every project directly on the phone. The Android template is packaged locally, and CI checks its APK structure, signature, alignment, project serialization tests, and the final AppMaker APK. These checks do not substitute for on-device APK generation and installation tests.
+
+
+## Verification
+The Android release workflow runs Flutter unit tests, static analysis, builds the standalone reader template, verifies its APK structure and signature, then builds and verifies the AppMaker APK. The workflow runner downloads build dependencies; this is separate from runtime behaviour, which remains offline.
