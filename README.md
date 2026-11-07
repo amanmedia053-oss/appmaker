@@ -7,6 +7,7 @@ A beautiful, offline-first Flutter starter for creating content-based app projec
 - Create local app projects: books, poetry, educational, magazine, and personal collections.
 - Add, edit, read, and delete writing entries inside each project.
 - Delete unwanted projects with a confirmation prompt.
+- Choose a saved accent color for each project; the generated reader template uses that color.
 - Import and export project JSON files for backup or transfer.
 - Project data is stored on-device with SharedPreferences.
 - No account, username, sign-in, Firebase, or network service is needed for normal use.
