@@ -71,18 +71,21 @@ class AppProject {
     required this.name,
     required this.category,
     required this.createdAt,
+    this.themeColor = 0xFF7054E8,
     List<BookEntry>? books,
   }) : books = books ?? [];
 
   final String name;
   final String category;
   final String createdAt;
+  int themeColor;
   final List<BookEntry> books;
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'category': category,
         'createdAt': createdAt,
+        'themeColor': themeColor,
         'books': books.map((b) => b.toJson()).toList(),
       };
 
@@ -90,6 +93,7 @@ class AppProject {
         name: json['name'] as String? ?? 'زما اپ',
         category: json['category'] as String? ?? 'کتابونه',
         createdAt: json['createdAt'] as String? ?? '',
+        themeColor: json['themeColor'] as int? ?? 0xFF7054E8,
         books: (json['books'] as List<dynamic>? ?? [])
             .map((e) => BookEntry.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
@@ -550,6 +554,54 @@ class ProjectPage extends StatefulWidget {
 }
 
 class _ProjectPageState extends State<ProjectPage> {
+  Future<void> _designProject() async {
+    const choices = <int>[
+      0xFF7054E8,
+      0xFF1565C0,
+      0xFF00897B,
+      0xFF2E7D32,
+      0xFFD84315,
+      0xFFAD1457,
+      0xFF5E35B1,
+      0xFF455A64,
+    ];
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('د اپ رنګ وټاکئ'),
+        content: Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: choices.map((value) => InkWell(
+            onTap: () => Navigator.pop(dialogContext, value),
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Color(value),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: widget.project.themeColor == value ? Colors.black : Colors.transparent,
+                  width: 3,
+                ),
+              ),
+              child: widget.project.themeColor == value
+                  ? const Icon(Icons.check, color: Colors.white)
+                  : null,
+            ),
+          )).toList(),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('بېرته')),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    setState(() => widget.project.themeColor = selected);
+    await widget.onChanged();
+  }
+
   Future<void> _exportProject() async {
     try {
       final directory = await Directory.systemTemp.createTemp('appmaker_export_');
@@ -687,7 +739,16 @@ class _ProjectPageState extends State<ProjectPage> {
   Widget build(BuildContext context) {
     final p = widget.project;
     return Scaffold(
-      appBar: AppBar(title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w900))),
+      appBar: AppBar(
+        title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w900)),
+        actions: [
+          IconButton(
+            tooltip: 'ډیزاین',
+            onPressed: _designProject,
+            icon: const Icon(Icons.palette_outlined),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addBook,
         backgroundColor: violet,
@@ -702,7 +763,7 @@ class _ProjectPageState extends State<ProjectPage> {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              gradient: const LinearGradient(colors: [Color(0xFF30236F), violet]),
+              gradient: LinearGradient(colors: [Color(p.themeColor), Color(p.themeColor).withValues(alpha: .72)]),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 32),
@@ -712,7 +773,13 @@ class _ProjectPageState extends State<ProjectPage> {
               Text('${p.category}  •  ${p.books.length} لیکنې', style: const TextStyle(color: Colors.white70)),
             ]),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _designProject,
+            icon: const Icon(Icons.palette_outlined),
+            label: const Text('د اپ رنګ او ډیزاین بدلول'),
+          ),
+          const SizedBox(height: 20),
           const Text('د پروژې لیکنې', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: ink)),
           const SizedBox(height: 12),
           if (p.books.isEmpty)
