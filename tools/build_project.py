@@ -69,7 +69,7 @@ def main() -> int:
     # Create the Android platform files locally, then build strictly offline.
     run(["flutter", "create", ".", "--platforms=android",
          "--org", args.application_id.rsplit(".", 1)[0],
-         "--project-name", "generated_book_app"], work)
+         "--project-name", args.application_id.rsplit(".", 1)[1]], work)
     run(["flutter", "pub", "get", "--offline"], work)
     run(["flutter", "build", "apk", "--release", "--offline"], work)
 
