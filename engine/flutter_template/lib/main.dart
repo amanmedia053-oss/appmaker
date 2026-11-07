@@ -21,7 +21,7 @@ class GeneratedReadingApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7054E8)),
+        colorScheme: ColorScheme.fromSeed(seedColor: accent),
         scaffoldBackgroundColor: const Color(0xFFF6F5FB),
       ),
       builder: (context, child) => Directionality(
@@ -41,6 +41,8 @@ class ReadingHome extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = data['name'] as String? ?? 'زما کتابتون';
     final category = data['category'] as String? ?? 'کتابونه';
+    final themeSeed = data['themeColor'] as int? ?? 0xFF7054E8;
+    final accent = Color(themeSeed);
     final books = (data['books'] as List<dynamic>? ?? [])
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
@@ -59,7 +61,7 @@ class ReadingHome extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(26),
               gradient: const LinearGradient(
-                colors: [Color(0xFF30236F), Color(0xFF7658F5), Color(0xFF9B83FF)],
+                colors: [accent, accent.withValues(alpha: .82), accent.withValues(alpha: .62)],
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
               ),
@@ -93,8 +95,8 @@ class ReadingHome extends StatelessWidget {
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 leading: const CircleAvatar(
-                  backgroundColor: Color(0xFFECE7FF),
-                  child: Icon(Icons.menu_book_rounded, color: Color(0xFF7054E8)),
+                  backgroundColor: accent.withValues(alpha: .12),
+                  child: Icon(Icons.menu_book_rounded, color: accent),
                 ),
                 title: Text(book['title'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(book['body'] as String? ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
