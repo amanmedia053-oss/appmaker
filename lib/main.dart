@@ -253,6 +253,27 @@ class _DashboardPageState extends State<DashboardPage> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _deleteProject(AppProject project) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('پروژه حذف کړئ؟'),
+        content: Text('«${project.name}» او ټولې لیکنې به یې له دې موبایل څخه حذف شي.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('نه')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('حذفول'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    projects.remove(project);
+    await _persist();
+  }
+
   @override
   Widget build(BuildContext context) {
     final pages = [
@@ -475,7 +496,20 @@ class _DashboardPageState extends State<DashboardPage> {
           leading: Container(width: 48, height: 48, decoration: BoxDecoration(gradient: const LinearGradient(colors: [violet, Color(0xFFA28EFF)]), borderRadius: BorderRadius.circular(15)), child: const Icon(Icons.phone_android_rounded, color: Colors.white)),
           title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold, color: ink)),
           subtitle: Text('${p.category}  •  ${p.books.length} لیکنې'),
-          trailing: const Icon(Icons.chevron_left_rounded),
+          trailing: PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'open') _openProject(p);
+              if (value == 'delete') _deleteProject(p);
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'open', child: Text('پروژه پرانیستل')),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text('پروژه حذفول', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+            child: const Icon(Icons.more_vert_rounded),
+          ),
         ),
       );
 
@@ -493,7 +527,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _apkInfo() => _showInfo(
         'د APK جوړول',
-        'دا لومړنۍ نسخه د پروژو او لیکنو افلاین جوړول او ساتل برابروي. د Android APK د تولید لپاره جلا محلي Build Engine، Android SDK او Gradle ته اړتیا ده؛ هغه برخه لا نه ده فعاله او په راتلونکې تخنیکي مرحله کې به جوړه شي.',
+        'پروژې او لیکنې افلاین جوړېږي او په موبایل کې ساتل کېږي. د موبایل دننه د هرې پروژې جلا APK جوړولو، لاسلیک او نصب انجن لا بشپړ شوی نه دی؛ د APK تڼۍ تر فعالېدو مخکې به د فایل جوړول او د Android په وسیله نصب په واقعي موبایل کې وازمویل شي.',
       );
 
   void _showInfo(String title, String message) => showDialog<void>(
@@ -540,6 +574,76 @@ class _ProjectPageState extends State<ProjectPage> {
         );
       }
     }
+  }
+
+  Future<void> _editBook(int index) async {
+    final current = widget.project.books[index];
+    final title = TextEditingController(text: current.title);
+    final body = TextEditingController(text: current.body);
+    final updated = await showDialog<BookEntry>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('لیکـنه سمول'),
+        content: SizedBox(
+          width: 420,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(controller: title, decoration: const InputDecoration(labelText: 'عنوان')),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: body,
+                  minLines: 6,
+                  maxLines: 10,
+                  decoration: const InputDecoration(labelText: 'متن', alignLabelWithHint: true),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('بېرته')),
+          FilledButton(
+            onPressed: () {
+              if (title.text.trim().isEmpty || body.text.trim().isEmpty) return;
+              Navigator.pop(
+                dialogContext,
+                BookEntry(title: title.text.trim(), body: body.text.trim()),
+              );
+            },
+            child: const Text('بدلون ساتل'),
+          ),
+        ],
+      ),
+    );
+    title.dispose();
+    body.dispose();
+    if (updated != null) {
+      setState(() => widget.project.books[index] = updated);
+      await widget.onChanged();
+    }
+  }
+
+  Future<void> _deleteBook(int index) async {
+    final entry = widget.project.books[index];
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('لیکنه حذف کړئ؟'),
+        content: Text('«${entry.title}» به حذف شي.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('نه')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('حذفول'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    setState(() => widget.project.books.removeAt(index));
+    await widget.onChanged();
   }
 
   Future<void> _addBook() async {
@@ -624,13 +728,19 @@ class _ProjectPageState extends State<ProjectPage> {
                     leading: CircleAvatar(backgroundColor: const Color(0xFFEDE8FF), child: Text('${e.key + 1}', style: const TextStyle(color: violet, fontWeight: FontWeight.bold))),
                     title: Text(e.value.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(e.value.body, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    onTap: () => showDialog<void>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text(e.value.title),
-                        content: SingleChildScrollView(child: Text(e.value.body, style: const TextStyle(height: 1.8))),
-                        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('بندول'))],
-                      ),
+                    onTap: () => _editBook(e.key),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') _editBook(e.key);
+                        if (value == 'delete') _deleteBook(e.key);
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(value: 'edit', child: Text('سمول')),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text('حذفول', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
                     ),
                   ),
                 )),
@@ -646,7 +756,7 @@ class _ProjectPageState extends State<ProjectPage> {
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('د APK جوړول'),
-                content: const Text('دا نسخه پروژه په بشپړ ډول افلاین جوړوي، ساتي، صادرولی او بېرته واردولی شي. خو د همدې موبایل دننه د APK تولید او لاسلیک انجن لا نه دی فعال؛ د APK جوړولو لپاره اوس مهال د کمپیوټر Flutter او Android SDK انجن ته اړتیا ده.'),
+                content: const Text('پروژه او لیکنې افلاین ساتل او JSON ته صادرولای شې. خو د همدې موبایل دننه د جلا APK جوړولو، لاسلیک او نصب انجن لا نه دی بشپړ شوی. دا تڼۍ تر هغه نه فعالیږي چې APK په واقعي Android وسیله کې جوړ، لاسلیک او د نصب له لارې تایید شوی نه وي.'),
                 actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('سمه ده'))],
               ),
             ),
