@@ -20,7 +20,7 @@ The GitHub Actions workflow builds the AppMaker application itself and uploads t
 ## Important: per-project APK generation
 This first milestone is the offline project/content builder. It does **not** yet generate a separate Android APK for every user-created project.
 
-A true fully-offline APK generator running on an Android phone needs a local Android build toolchain (JDK, Android SDK/build-tools, Gradle, a template project, signing flow, and substantial device storage/RAM). Flutter alone cannot compile another Android app from Dart code at runtime. The next engineering milestone must implement and validate that build engine, or use a desktop build companion. The current UI labels this feature as not yet active rather than pretending it works.
+A true fully-offline APK generator running on an Android phone needs a local Android build toolchain (JDK, Android SDK/build-tools, Gradle, a template project, signing flow, and substantial device storage/RAM). Flutter alone cannot compile another Android app from Dart code at runtime. The mobile APK engine still needs its on-device APK rewriting/signing and installer bridge. The release workflow now prepares and embeds a standalone offline reader template so the next native-engine stage has a local APK template available without downloading anything at runtime. The current UI labels this feature as not yet active rather than pretending it works.
 
 ## Run locally
 ```bash
@@ -38,4 +38,4 @@ flutter run
 
 A first local build engine is available in `tools/build_project.py` with a standalone reading-app template in `engine/flutter_template`. It packages one project JSON file into its own Android APK using a locally installed Flutter and Android SDK toolchain. See [engine/README.md](engine/README.md) for the input format and commands.
 
-**Current limitation:** the mobile AppMaker app does not yet export its locally stored projects to JSON automatically, and a normal Flutter Android app cannot compile another APK directly on-device without a very large bundled native build toolchain. The current engine therefore runs on a computer with the toolchain installed; it can build offline after all SDK and dependency artifacts have been cached.
+**Current limitation:** the mobile AppMaker app does not yet export its locally stored projects to JSON automatically, and a normal Flutter Android app cannot compile another APK directly on-device without a very large bundled native build toolchain. The current Python engine therefore runs on a computer with the toolchain installed; it can build offline after all SDK and dependency artifacts have been cached. The CI release workflow also builds the standalone reader template and embeds it in AppMaker as an offline asset.
