@@ -49,6 +49,9 @@ jobs:
       - name: Install AppMaker dependencies
         run: flutter pub get
 
+      - name: Run Flutter tests
+        run: flutter test --no-pub
+
       - name: Analyze Flutter code
         run: flutter analyze
 
