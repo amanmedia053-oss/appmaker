@@ -34,6 +34,8 @@ jobs:
         working-directory: engine/flutter_template
         run: |
           flutter create . --platforms=android --org com.appmaker.generated --project-name generated_reader
+          # The generated starter test targets MyApp, but this template uses GeneratedReadingApp.
+          rm -f test/widget_test.dart
           flutter pub get
           flutter analyze
           flutter build apk --release
