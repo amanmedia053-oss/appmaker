@@ -382,7 +382,18 @@ class _DashboardPageState extends State<DashboardPage> {
         _sectionTitle('چټک پیل', 'ټول امکانات'),
         const SizedBox(height: 12),
         _quickTile(Icons.menu_book_rounded, 'د کتابونو اپ', 'کتابونه او لیکنې تنظیم کړه', () => _newProject()),
-        _quickTile(Icons.palette_outlined, 'ډیزاین او بڼه', 'د اپ د ښکلا تنظیمات', () => _showInfo('ډیزاین او بڼه', 'د رنګونو، فونټونو او قالبونو تنظیمات به په راتلونکې مرحله کې ورزیات شي.')),
+        _quickTile(
+          Icons.palette_outlined,
+          'ډیزاین او بڼه',
+          'د هرې پروژې رنګ د هغې له دننه بدل کړه',
+          () {
+            if (projects.isEmpty) {
+              _showInfo('ډیزاین او بڼه', 'لومړی یوه پروژه جوړه کړه، بیا یې د پروژې په پاڼه کې د رنګ تڼۍ وکاروه.');
+            } else {
+              _openProject(projects.first);
+            }
+          },
+        ),
         _quickTile(Icons.file_download_outlined, 'د APK جوړول', 'د اپ د نصب فایل چمتو کول', _apkInfo),
         const SizedBox(height: 25),
         _sectionTitle('وروستي اپونه', 'ټول وګوره'),
