@@ -32,8 +32,13 @@ jobs:
           flutter analyze
           flutter build apk --release
 
-      - name: Verify standalone reader APK contents
-        run: python3 tools/verify_template_apk.py engine/flutter_template/build/app/outputs/flutter-apk/app-release.apk
+      - name: Verify standalone reader APK contents and signature
+        run: |
+          APK=engine/flutter_template/build/app/outputs/flutter-apk/app-release.apk
+          python3 tools/verify_template_apk.py "$APK"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
+          "$BUILD_TOOLS/zipalign" -c -v 4 "$APK"
 
       - name: Package offline reader template inside AppMaker
         run: |
@@ -50,8 +55,13 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Verify AppMaker APK archive integrity
-        run: python3 -c "import sys,zipfile; p='build/app/outputs/flutter-apk/app-release.apk'; z=zipfile.ZipFile(p); bad=z.testzip(); sys.exit(('Corrupt APK entry: '+bad) if bad else 0)"
+      - name: Verify AppMaker APK archive, signature and alignment
+        run: |
+          APK=build/app/outputs/flutter-apk/app-release.apk
+          python3 -c "import sys,zipfile; z=zipfile.ZipFile(sys.argv[1]); bad=z.testzip(); sys.exit(('Corrupt APK entry: '+bad) if bad else 0)" "$APK"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
+          "$BUILD_TOOLS/zipalign" -c -v 4 "$APK"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
