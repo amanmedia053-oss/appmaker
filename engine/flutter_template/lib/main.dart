@@ -62,7 +62,7 @@ class ReadingHome extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(26),
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [accent, accent.withValues(alpha: .82), accent.withValues(alpha: .62)],
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
