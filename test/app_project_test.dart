@@ -8,6 +8,7 @@ void main() {
         name: 'د شعرونو ټولګه',
         category: 'شعرونه',
         createdAt: '2026-11-07T10:00:00.000',
+        themeColor: 0xFF00897B,
         books: [
           BookEntry(title: 'غزل', body: 'لومړی بیت\nدوهم بیت'),
           BookEntry(title: 'نظم', body: 'د نظم متن'),
@@ -19,6 +20,7 @@ void main() {
       expect(restored.name, original.name);
       expect(restored.category, original.category);
       expect(restored.createdAt, original.createdAt);
+      expect(restored.themeColor, original.themeColor);
       expect(restored.books, hasLength(2));
       expect(restored.books.first.title, 'غزل');
       expect(restored.books.first.body, 'لومړی بیت\nدوهم بیت');
@@ -30,6 +32,7 @@ void main() {
       expect(restored.name, 'زما اپ');
       expect(restored.category, 'کتابونه');
       expect(restored.createdAt, isEmpty);
+      expect(restored.themeColor, 0xFF7054E8);
       expect(restored.books, isEmpty);
     });
   });
