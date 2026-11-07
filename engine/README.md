@@ -36,5 +36,5 @@ The APK is copied to `dist/<project-name>.apk`.
 - Run dependency resolution once while connected so Flutter's SDK and all required artifacts are cached. The build script itself uses `flutter pub get --offline` and `flutter build apk --offline`.
 - The build machine must have enough RAM and disk space for Android compilation.
 - This is a local build engine for a computer with the Android toolchain. A normal Flutter app cannot invoke Flutter/Gradle to compile a second APK directly inside an ordinary Android phone. Making that happen on-device would require bundling/maintaining a very large native toolchain and is not implemented here.
-- The AppMaker mobile UI does not yet export its saved projects to the JSON input file automatically; that export/import bridge is the next integration task.
+- The mobile app now exports a selected project as a JSON file through Android's share sheet and can import a compatible JSON project file offline. This moves project data between the phone and the computer CLI, but does not compile an APK on the phone.
 - APK signing currently uses Flutter's standard debug/release build configuration. Configure a private release keystore before distributing production apps; never commit keystore files or passwords.
