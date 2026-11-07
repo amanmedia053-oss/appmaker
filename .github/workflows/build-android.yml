@@ -29,7 +29,11 @@ jobs:
         run: |
           flutter create . --platforms=android --org com.appmaker.generated --project-name generated_reader
           flutter pub get
+          flutter analyze
           flutter build apk --release
+
+      - name: Verify standalone reader APK contents
+        run: python3 tools/verify_template_apk.py engine/flutter_template/build/app/outputs/flutter-apk/app-release.apk
 
       - name: Package offline reader template inside AppMaker
         run: |
@@ -45,6 +49,9 @@ jobs:
 
       - name: Build release APK
         run: flutter build apk --release
+
+      - name: Verify AppMaker APK archive integrity
+        run: python3 -c "import sys,zipfile; p='build/app/outputs/flutter-apk/app-release.apk'; z=zipfile.ZipFile(p); bad=z.testzip(); sys.exit(('Corrupt APK entry: '+bad) if bad else 0)"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
