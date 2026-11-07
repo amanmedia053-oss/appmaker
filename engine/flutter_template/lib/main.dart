@@ -16,6 +16,8 @@ class GeneratedReadingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = data['name'] as String? ?? 'زما کتابتون';
+    final themeSeed = data['themeColor'] as int? ?? 0xFF7054E8;
+    final accent = Color(themeSeed);
     return MaterialApp(
       title: name,
       debugShowCheckedModeBanner: false,
@@ -94,7 +96,7 @@ class ReadingHome extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: const CircleAvatar(
+                leading: CircleAvatar(
                   backgroundColor: accent.withValues(alpha: .12),
                   child: Icon(Icons.menu_book_rounded, color: accent),
                 ),
