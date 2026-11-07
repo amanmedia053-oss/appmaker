@@ -39,6 +39,7 @@ jobs:
           BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
           "$BUILD_TOOLS/zipalign" -c -v 4 "$APK"
+          python3 tools/verify_offline_apk.py "$BUILD_TOOLS/aapt" "$APK"
 
       - name: Package offline reader template inside AppMaker
         run: |
@@ -65,6 +66,7 @@ jobs:
           BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
           "$BUILD_TOOLS/zipalign" -c -v 4 "$APK"
+          python3 tools/verify_offline_apk.py "$BUILD_TOOLS/aapt" "$APK"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
